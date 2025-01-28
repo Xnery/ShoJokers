@@ -146,29 +146,60 @@ SMODS.Joker {
         name = 'Blunt Rotation',
         text = {
             "Chips required are",
-            "reduced by {C:attention}15%{}"
+            "reduced by {C:attention}#1#%{}"
         }
     },
-    config = { extra = { blindchipbase }},
+    config = { extra = 15 },
     rarity = 2,
     atlas = 'ShoJokers',
     pos = { x = 3 , y = 0},
     cost = 6,
     loc_vars = function(self,info_queue,card)
-        return { vars = { G.GAME.blind.chips, G.GAME.blind.chip_text } }
+        return { vars = { card.ability.extra, G.GAME.blind.chips, G.GAME.blind.chip_text } }
     end,
     calculate = function(self, card, context)
         if context.setting_blind and not self.getting_sliced then
-            local blindchipbase = G.GAME.blind.chips
             G.E_MANAGER:add_event(Event({trigger = 'after', delay = 0.4, func = function()
                 play_sound('timpani')
-                G.GAME.blind.chips = G.GAME.blind.chips - ( blindchipbase * 0.15 )
+                G.GAME.blind.chips = G.GAME.blind.chips * 0.85
                 G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
                 return true end}))
             return{
                 message = "Zonk!",
                 color = G.C.GREEN,
                 card = card
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+    key = 'sho_suit',
+    loc_txt = {
+        name = 'Shourunner',
+        text = {
+            "{C:green}#1# in #2#{} chance",
+            "to retrigger each",
+            "{C:attention}played card{} up to",
+            "{C:attention}2{} additional times"
+        }
+    },
+    rarity = 2,
+    atlas = 'ShoJokers',
+    pos = { x = 4, y = 0 },
+    config = { extra = { odds = 3, repetitions = 0 } },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { (G.GAME.probabilities.normal or 1), card.ability.extra.odds, card.ability.extra.repetitions } }
+    end,
+    calculate = function(self, card, context)
+        if context.repetition then
+            card.ability.extra.repetitions = 0
+            while (card.ability.extra.repetitions < 2) and (pseudorandom('sho_suit') < G.GAME.probabilities.normal / card.ability.extra.odds) do
+                card.ability.extra.repetitions = card.ability.extra.repetitions + 1
+            end
+            return {
+                message = localize('k_again_ex'),
+                repetitions = card.ability.extra.repetitions
             }
         end
     end
