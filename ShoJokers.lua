@@ -155,7 +155,7 @@ SMODS.Joker {
     pos = { x = 3 , y = 0},
     cost = 6,
     loc_vars = function(self,info_queue,card)
-        return { vars = { card.ability.extra, G.GAME.blind.chips, G.GAME.blind.chip_text } }
+        return { vars = { card.ability.extra } }
     end,
     calculate = function(self, card, context)
         if context.setting_blind and not self.getting_sliced then
@@ -180,16 +180,17 @@ SMODS.Joker {
         text = {
             "{C:green}#1# in #2#{} chance",
             "to retrigger each",
-            "{C:attention}played card{} up to",
-            "{C:attention}2{} additional times"
+            "{C:attention}scored card{} and {C:attention}held{}",
+            "{C:attention}in hand{} abilities up",
+            "to {C:attention}2{} additional times"
         }
     },
-    rarity = 2,
+    rarity = 3,
     atlas = 'ShoJokers',
     pos = { x = 4, y = 0 },
-    config = { extra = { odds = 3, repetitions = 0 } },
+    config = { extra = { odds = 3 } },
     loc_vars = function(self, info_queue, card)
-        return { vars = { (G.GAME.probabilities.normal or 1), card.ability.extra.odds, card.ability.extra.repetitions } }
+        return { vars = { (G.GAME.probabilities.normal or 1), card.ability.extra.odds } }
     end,
     calculate = function(self, card, context)
         if context.repetition then
