@@ -22,7 +22,7 @@ SMODS.Joker {
   rarity = 1,
   atlas = 'ShoJokers',
   pos = { x = 0 , y = 0 },
-  cost = 4,
+  cost = 0,
   eternal_compat = false,
   loc_vars = function(self, info_queue, card)
       return { vars = { card.ability.extra.Xmult } }
@@ -62,6 +62,11 @@ SMODS.Joker {
               message = 'Fuck you!',
           }
       end
+      if context.selling_self then
+        return {
+            message = 'Pussy!',
+        }
+    end
   end
 }
 
