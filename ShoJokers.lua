@@ -186,6 +186,7 @@ SMODS.Joker {
         }
     },
     rarity = 3,
+    cost = 5,
     atlas = 'ShoJokers',
     pos = { x = 4, y = 0 },
     config = { extra = { odds = 3 } },
@@ -193,7 +194,7 @@ SMODS.Joker {
         return { vars = { (G.GAME.probabilities.normal or 1), card.ability.extra.odds } }
     end,
     calculate = function(self, card, context)
-        if context.repetition then
+        if context.repetition and not context.repetition_only then
             card.ability.extra.repetitions = 0
             while (card.ability.extra.repetitions < 2) and (pseudorandom('sho_suit') < G.GAME.probabilities.normal / card.ability.extra.odds) do
                 card.ability.extra.repetitions = card.ability.extra.repetitions + 1
@@ -201,6 +202,66 @@ SMODS.Joker {
             return {
                 message = localize('k_again_ex'),
                 repetitions = card.ability.extra.repetitions
+            }
+        end
+    end
+}
+
+SMODS.Joker {
+    key = 'sho_clueless',
+    loc_txt = {
+        name = 'Hubris',
+        text ={
+            "This Joker gains {X:mult,C:white}X#1#{}",
+            "Mult every time a {C:attention}Blind{}",
+            "is defeated in {C:attention}one hand{}",
+            "{C:red,E:2,s:1.1}+50% Chip requirement{}",
+            "{C:inactive}(Currently {C:white,X:mult}X#2#{C:inactive} Mult){}"
+        }
+    },
+    rarity = 3,
+    atlas = 'ShoJokers',
+    cost = 7,
+    blueprint_compat = true,
+    pos = { x = 7, y = 0 },
+    config = { extra = { a_xmult = 0.75 , xmult = 1 , basehands = 4 } },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.a_xmult , card.ability.extra.xmult} }
+    end,
+    calculate = function(self, card, context)
+        if context.setting_blind and not self.getting_sliced then
+            G.E_MANAGER:add_event(Event({trigger = 'after', func = function()
+                play_sound('timpani',0.8)
+                G.GAME.blind.chips = G.GAME.blind.chips * 1.5
+                G.GAME.blind.chip_text = number_format(G.GAME.blind.chips)
+                return true end}))
+            return{
+                message = "Hmm...",
+                color = G.C.RED,
+                card = card
+            }
+        end
+        if context.first_hand_drawn then
+            card.ability.extra.basehands = G.GAME.current_round.hands_left
+            return
+        end
+        if context.joker_main and card.ability.extra.xmult > 1 then
+            return {
+                message = localize { type = 'variable', key = 'a_xmult', vars = { card.ability.extra.xmult } },
+                Xmult_mod = card.ability.extra.xmult
+            }
+        end
+        if context.end_of_round and not context.repetition and context.game_over == false and not context.blueprint and G.GAME.current_round.hands_left == ( card.ability.extra.basehands - 1 ) then
+            G.E_MANAGER:add_event(Event({
+                func = function()               --Without this event, the message will
+                    return true                 --pop-up on every playing card left and
+                end                             --repeat the upgrade for each message
+            }))
+            card.ability.extra.xmult = card.ability.extra.xmult + card.ability.extra.a_xmult
+            return {
+                message = 'Upgraded!',
+                colour = G.C.MULT,
+                card = card
             }
         end
     end
