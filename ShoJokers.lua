@@ -11,12 +11,13 @@ SMODS.Joker {
       name = 'Fuck You',
       text = {
           "{X:mult,C:white} X#1# {} Mult",
-          "This card gives {C:gold}$1{}",
+          "This card gives {C:gold}$10{}",
           "and is destroyed",
           "at end of round"
       }
   },
   no_pool_flag = 'sho_armsfa_extinct',
+  blueprint_compat = true,
   config = { extra = { Xmult = 0 } },
   rarity = 1,
   atlas = 'ShoJokers',
@@ -56,7 +57,7 @@ SMODS.Joker {
               end
           }))
           G.GAME.pool_flags.sho_armsfa_extinct = true
-          ease_dollars(1,true)
+          ease_dollars(10,true)
           return {
               message = 'Fuck you!',
           }
@@ -77,6 +78,7 @@ SMODS.Joker {
         }
     },
     rarity = 2,
+    blueprint_compat = true,
     atlas = 'ShoJokers',
     pos = { x = 1, y = 0 },
     config = { extra = { chips = 50, odds = 2, repetitions = 0, chipstotal = 50 } },
@@ -111,6 +113,7 @@ SMODS.Joker {
         }
     },
     config = { extra = { Xmult = 1 } },
+    blueprint_compat = true,
     rarity = 3,
     atlas = 'ShoJokers',
     pos = { x = 2 , y = 0 },
@@ -150,6 +153,7 @@ SMODS.Joker {
         }
     },
     config = { extra = 15 },
+    blueprint_compat = true,
     rarity = 2,
     atlas = 'ShoJokers',
     pos = { x = 3 , y = 0},
@@ -186,6 +190,7 @@ SMODS.Joker {
         }
     },
     rarity = 3,
+    blueprint_compat = true,
     cost = 5,
     atlas = 'ShoJokers',
     pos = { x = 4, y = 0 },
@@ -203,6 +208,46 @@ SMODS.Joker {
                 message = localize('k_again_ex'),
                 repetitions = card.ability.extra.repetitions
             }
+        end
+    end
+}
+
+SMODS.Joker {
+    key = 'sho_booba',
+    loc_txt = {
+        name = 'Shooba',
+        text = {
+            "Played {C:attention}Kings{} give",
+            "{C:mult}+8{} Mult for every",
+            "{C:attention}Queen{} held in hand",
+            "when scored",
+            "{C:inactive,s:0.85}(Mime and Red Seals don't count!)"
+        }
+    },
+    rarity = 1,
+    blueprint_compat = true,
+    atlas = 'ShoJokers',
+    pos = { x = 5, y = 0 },
+    config = { extra = { mult = 8 } },
+    loc_vars = function(self, info_queue, card)
+        return { vars = { card.ability.extra.mult } }
+    end,
+    calculate = function(self, card, context)
+        if context.individual and context.cardarea == G.play then
+            if context.other_card:get_id() == 13 and not context.other_card.debuff then
+                card.ability.extra.queen_count = 0
+                for _, other_card in ipairs(G.hand.cards) do 
+                    if other_card:get_id() == 12 then
+                        card.ability.extra.queen_count = card.ability.extra.queen_count + 1
+                    end
+                end
+                if card.ability.extra.queen_count > 0 then
+                    return {
+                        mult = card.ability.extra.mult * card.ability.extra.queen_count,
+                        card = context.other_card 
+                    }
+                end
+            end
         end
     end
 }
